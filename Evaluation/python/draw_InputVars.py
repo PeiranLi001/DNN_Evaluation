@@ -11,8 +11,12 @@ import random
 from math import *
 
 def drawHisto(h1,h2,name,var):
+   print "Integral h1 = ",h1.Integral()
+   print "Integral h2 = ",h2.Integral()
 
-   #gStyle.SetOptStat(0000)
+   gStyle.SetOptStat(0000)
+   h1.Scale(1./h1.Integral())
+   h2.Scale(1./h2.Integral())
 
    h1.SetMarkerStyle(20)
    h1.SetMarkerColor(kBlue) 
@@ -70,21 +74,31 @@ if __name__ == '__main__':
 
   #fill trees
   print "\n--- ############################################################# ---"
-  tree = TChain()
+  tree = TChain("output_tree")
+  tree1 = TChain("output_tree")
   with open(args.inputTrees) as f_list:
      data_list = f_list.read()
   lines = data_list.splitlines() 
+  coutFiles = 0
   for iLine,line in enumerate(lines):
      if line[0]!="#": 
-        tree.AddFile(line)
-        print "InputTree: ",line
+        print "InputTree: ",coutFiles,"\t",line
+        if coutFiles==0:
+          tree.AddFile(line)
+          print "tree: file: ",line
+        if coutFiles==1:
+          tree1.AddFile(line)
+          print "tree1: file1: ",line
+        coutFiles = coutFiles+1
   print "--- ############################################################# ---\n"
+  print "tree: ",tree
+  print "tree1: ",tree1
 
   sel = ''
   sel_noWeight = ''
   if not args.selections:
-     sel = 'weight*(Leading_Photon_pt/CMS_hgg_mass>0.35 && Subleading_Photon_pt/CMS_hgg_mass>0.25 && passbVeto==1 && ExOneLep==1 && N_goodJets>=1)'
-     sel_noWeight = 'Leading_Photon_pt/CMS_hgg_mass>0.35 && Subleading_Photon_pt/CMS_hgg_mass>0.25 && passbVeto==1 && ExOneLep==1 && N_goodJets>=1' 
+     sel = 'weight*(Leading_Photon_pt/CMS_hgg_mass>1/3. && Subleading_Photon_pt/CMS_hgg_mass>1/4.)'
+     sel_noWeight = 'Leading_Photon_pt/CMS_hgg_mass>1/3. && Subleading_Photon_pt/CMS_hgg_mass>1/4.' 
   else:
      sel = 'weight*('+args.selections+')' 
      sel_noWeight = args.selections
@@ -98,13 +112,19 @@ if __name__ == '__main__':
      data_list = f_list.read()
   lines = data_list.splitlines() 
   for iLine,line in enumerate(lines):
-     #print iLine, line
+     print iLine, line
      inputs = line.split()
-     hist_weight = TH1F("h_"+str(inputs[0])+"_weight",str(inputs[0]),int(inputs[1]),float(inputs[2]),float(inputs[3]))
+     print "inputs: ",inputs
+     # hist_weight = TH1F("h_"+str(inputs[0])+"_weight",str(inputs[0]),int(inputs[1]),float(inputs[2]),float(inputs[3]))
+     # hist_weight1 = TH1F("h1_"+str(inputs[0])+"_weight",str(inputs[0]),int(inputs[1]),float(inputs[2]),float(inputs[3]))
      hist_noWeight = TH1F("h_"+str(inputs[0])+"_noWeight",str(inputs[0]),int(inputs[1]),float(inputs[2]),float(inputs[3]))
+     hist_noWeight1 = TH1F("h1_"+str(inputs[0])+"_noWeight",str(inputs[0]),int(inputs[1]),float(inputs[2]),float(inputs[3]))
      tree.Draw(str(inputs[0])+">>h_"+str(inputs[0])+"_noWeight",sel_noWeight)
-     if inputs[0]!="weight": tree.Draw(str(inputs[0])+">>h_"+str(inputs[0])+"_weight",sel)
-     else: tree.Draw(str(inputs[0])+">>h_"+str(inputs[0])+"_weight",sel_noWeight)
-     drawHisto(hist_weight,hist_noWeight,str(inputs[0]),inputs[4])
+     tree1.Draw(str(inputs[0])+">>h1_"+str(inputs[0])+"_noWeight",sel_noWeight)
+     # if inputs[0]!="weight": tree.Draw(str(inputs[0])+">>h_"+str(inputs[0])+"_weight",sel)
+     # else: tree.Draw(str(inputs[0])+">>h_"+str(inputs[0])+"_weight",sel_noWeight)
+     # if inputs[0]!="weight": tree.Draw(str(inputs[0])+">>h1_"+str(inputs[0])+"_weight",sel)
+     # else: tree.Draw(str(inputs[0])+">>h1_"+str(inputs[0])+"_weight",sel_noWeight)     
+     drawHisto(hist_noWeight,hist_noWeight1,str(inputs[0]),inputs[4])
 
   
