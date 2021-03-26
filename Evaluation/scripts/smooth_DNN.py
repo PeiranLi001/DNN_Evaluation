@@ -40,23 +40,34 @@ def makeRatio(h_num,h_denom):
   return h_ratio
 
 def MakeTree(inputTree, h_ratio, scale, ouputFile):
+ print("inputTree: ",inputTree)
+ print("h_ratio: ",h_ratio)
+ print("scale: ",scale)
+ print("ouputFile: ",ouputFile)
+ # inputTree.Print()
+ print("="*51)
  outFile = ROOT.TFile(ouputFile, "RECREATE")
- inputTree.SetBranchStatus('bdt_weight',0)
  outTree = inputTree.CloneTree(0)
- bdt_weight = array('f', [0])
+ outTree.SetBranchStatus('*',1)
+ bdt_weight = array('f', [0.])
+ # inputTree.SetBranchStatus('bdt_weight',0)
  _DNN_weight = outTree.Branch('bdt_weight', bdt_weight, 'bdt_weight/F')     
  nentries = inputTree.GetEntries()
+ print("nentries: %f"%nentries)
  for i in range(0, nentries):
     inputTree.GetEntry(i)
-    if h_ratio.GetBinContent(h_ratio.FindBin(inputTree.evalDNN))!=0.: 
-        bdt_weight[0] = scale*float(h_ratio.GetBinContent(h_ratio.FindBin(inputTree.evalDNN)))
+    if h_ratio.GetBinContent(h_ratio.FindBin(inputTree.DNN_evaluation))!=0.: 
+        bdt_weight[0] = scale*float(h_ratio.GetBinContent(h_ratio.FindBin(inputTree.DNN_evaluation)))
     else: bdt_weight[0] = scale 
     outTree.Fill() 
  outFile.cd()
+ print("DEBUG:#62")
  outTree.Write()
  outFile.Close()
 
 def smoothing(h_bdt,method="SmoothSuper"):
+ print("[DEBUG#69:]: Inside smoothing function")
+ print(h_bdt)
  
  bin_min = h_bdt.GetBinCenter(1)-h_bdt.GetBinWidth(1)/2.
  bin_max = h_bdt.GetBinCenter(h_bdt.GetNbinsX())+h_bdt.GetBinWidth(h_bdt.GetNbinsX())/2.
@@ -70,13 +81,15 @@ def smoothing(h_bdt,method="SmoothSuper"):
  g_DNN_smooth = ROOT.TGraph() 
  smoother = ROOT.TGraphSmooth()
 
+ h_bdt.Print("all")
+
  for bin in range(0,h_bdt.GetNbinsX()): 
   g_bdt.SetPoint(bin,h_bdt.GetBinCenter(bin+1),h_bdt.GetBinContent(bin+1))
  if method=="SmoothLowess": g_DNN_smooth = smoother.SmoothLowess(g_bdt)
  elif method=="SmoothKern": g_DNN_smooth = smoother.SmoothKern(g_bdt)
  elif method=="SmoothSuper": g_DNN_smooth = smoother.SmoothSuper(g_bdt,"",0)
  else: 
-    print "WARNING: unknown smoothing method!"
+    print( "WARNING: unknown smoothing method!")
     return -1
 
  rnd = ROOT.TRandom()
@@ -84,9 +97,12 @@ def smoothing(h_bdt,method="SmoothSuper"):
  y = array('d', [0])
  for bin in range(0,h_DNN_smooth.GetNbinsX()): 
   g_DNN_smooth.GetPoint(bin+1,x,y)
+  print("x = ",x)
+  print("y = ",y)
   h_DNN_smooth.SetBinContent(bin+1,y[0])
   h_DNN_smooth_rnd.SetBinContent(bin+1,rnd.Poisson(float(y[0])))
   
+ print("[DEBUG:#99] h_DNN_smooth.Integral() = ",h_DNN_smooth.Integral())
  h_DNN_smooth.Scale(h_bdt.Integral()/h_DNN_smooth.Integral())
  h_DNN_smooth_rnd.Scale(h_bdt.Integral()/h_DNN_smooth_rnd.Integral())
 
@@ -127,7 +143,7 @@ def compareHistos(hist_data_tmp,hist_bkg_tmp,name,rebin):
    max = hist_bkg.GetMaximum()
    if max<hist_data.GetMaximum(): max = hist_data.GetMaximum()
    #hist_bkg.GetYaxis().SetRangeUser(min*0.5,max*2.)
-   hist_bkg.GetYaxis().SetRangeUser(3.,200.)
+   # hist_bkg.GetYaxis().SetRangeUser(3.,200.)
 
    c = ROOT.TCanvas()
    #if isPositive(hist_bkg) and isPositive(hist_data): c.SetLogy()
@@ -153,7 +169,7 @@ def drawHistos(hist,hist_smooth,hist_smooth_up,hist_smooth_down,name):
    hist_smooth_up.SetLineColor(ROOT.kGreen)
    hist_smooth_down.SetLineColor(ROOT.kBlue)
    hist.GetYaxis().SetRangeUser(minimum*0.5,2.*maximum)
-   hist.GetXaxis().SetTitle('evalDNN')
+   hist.GetXaxis().SetTitle('DNN_evaluation')
    
    title = name
    hist.SetTitle(title.replace('h_',''))
@@ -210,7 +226,7 @@ if __name__ == '__main__':
  #inDir = '/eos/user/b/bmarzocc/HHWWgg/January_2021_Production/HHWWyyDNN_binary_noHgg_noNegWeights_BalanceYields_allBkgs_LOSignals_noPtOverM/'
 
  nBins = 100
- #print args.nBins,args.min,args.max
+ #print( args.nBins,args.min,args.max)
  if args.nBins: nBins = args.nBins
  min = 0.1
  if args.min: min = args.min
@@ -221,17 +237,17 @@ if __name__ == '__main__':
  massMax = 135.
  if args.massMax: massMax = args.massMax
 
- print "inDir:",inDir
- print "nBins:",nBins
- print "Min:",min
- print "Max:",max
- print "massMin:",massMin
- print "massMax:",massMax
+ print( "inDir:",inDir)
+ print( "nBins:",nBins)
+ print( "Min:",min)
+ print( "Max:",max)
+ print( "massMin:",massMin)
+ print( "massMax:",massMax)
  
  histo_scale = ROOT.TH1F("histo_scale","",100000,-1.1,1.)
- Cut_noMass = '( evalDNN>'+str(min)+' )'
- Cut_SR = '( CMS_hgg_mass>100. && CMS_hgg_mass<180. && (CMS_hgg_mass > '+str(massMin)+' && CMS_hgg_mass < '+str(massMax)+') && evalDNN>'+str(min)+' )'
- Cut_SB = '( CMS_hgg_mass>100. && CMS_hgg_mass<180. && !(CMS_hgg_mass > 115 && CMS_hgg_mass < 135) && evalDNN>'+str(min)+' )'
+ Cut_noMass = '( DNN_evaluation>'+str(min)+' )'
+ Cut_SR = '( CMS_hgg_mass>100. && CMS_hgg_mass<180. && (CMS_hgg_mass > '+str(massMin)+' && CMS_hgg_mass < '+str(massMax)+') && DNN_evaluation>'+str(min)+' )'
+ Cut_SB = '( CMS_hgg_mass>100. && CMS_hgg_mass<180. && !(CMS_hgg_mass > 115 && CMS_hgg_mass < 135) && DNN_evaluation>'+str(min)+' )'
 
  h_DNN_signal_SB_2017 = ROOT.TH1F("h_DNN_signal_SB_2017","h_DNN_signal_SB_2017",int(nBins),float(min),float(max))
  h_DNN_signal_SR_2017 = ROOT.TH1F("h_DNN_signal_SR_2017","h_DNN_signal_SR_2017",int(nBins),float(min),float(max)) 
@@ -252,77 +268,45 @@ if __name__ == '__main__':
 
  histo_scale.Reset() 
  sig_tree_2017 = ROOT.TChain()
- sig_tree_2017.AddFile(inDir+'/GluGluToHHTo2G2Qlnu_node_cHHH1_2017_HHWWggTag_0_MoreVars.root/GluGluToHHTo2G2Qlnu_node_cHHH1_13TeV_HHWWggTag_0_v1')
+ sig_tree_2017.AddFile(inDir+'/GluGluToHHTo2G4Q_node_cHHH1_2018.root/output_tree')
  sig_tree_2017.Draw("Leading_Photon_MVA<-1.?-1.1:Leading_Photon_MVA>>histo_scale","weight*0.441*0.00097*31.049*"+Cut_SR)
  sig_scale_2017 = float(histo_scale.Integral())
- sig_tree_2017.Draw("evalDNN>>h_DNN_signal_SB_2017",str(lumi_2017)+"*weight*0.441*0.00097*31.049*"+Cut_SB)  
- sig_tree_2017.Draw("evalDNN>>h_DNN_signal_SR_2017",str(lumi_2017)+"*weight*0.441*0.00097*31.049*"+Cut_SR) 
+ sig_tree_2017.Draw("DNN_evaluation>>h_DNN_signal_SB_2017",str(lumi_2017)+"*weight*0.441*0.00097*31.049*"+Cut_SB)  
+ sig_tree_2017.Draw("DNN_evaluation>>h_DNN_signal_SR_2017",str(lumi_2017)+"*weight*0.441*0.00097*31.049*"+Cut_SR) 
 
  ### HtoGG Bkgs ###
  ggHtoGG_tree_2017 = ROOT.TChain()
- ggHtoGG_tree_2017.AddFile(inDir+'/GluGluHToGG_2017_HHWWggTag_0_MoreVars.root/ggh_125_13TeV_HHWWggTag_0_v1')
- ggHtoGG_tree_2017.Draw("evalDNN>>h_DNN_ggHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)  
+ ggHtoGG_tree_2017.AddFile(inDir+'/GluGluHToGG_M125_TuneCP5_13TeV.root/output_tree')
+ ggHtoGG_tree_2017.Draw("DNN_evaluation>>h_DNN_ggHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)  
  VBFHtoGG_tree_2017 = ROOT.TChain()
- VBFHtoGG_tree_2017.AddFile(inDir+'/VBFHToGG_2017_HHWWggTag_0_MoreVars.root/vbf_125_13TeV_HHWWggTag_0_v1')
- VBFHtoGG_tree_2017.Draw("evalDNN>>h_DNN_VBFHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)
+ VBFHtoGG_tree_2017.AddFile(inDir+'/VBFHToGG_M125_13TeV.root/output_tree')
+ VBFHtoGG_tree_2017.Draw("DNN_evaluation>>h_DNN_VBFHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)
  VHtoGG_tree_2017 = ROOT.TChain()
- VHtoGG_tree_2017.AddFile(inDir+'/VHToGG_2017_HHWWggTag_0_MoreVars.root/wzh_125_13TeV_HHWWggTag_0_v1')
- VHtoGG_tree_2017.Draw("evalDNN>>h_DNN_VHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR) 
+ VHtoGG_tree_2017.AddFile(inDir+'/VHToGG_M125_13TeV.root/output_tree')
+ VHtoGG_tree_2017.Draw("DNN_evaluation>>h_DNN_VHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR) 
  ttHJetToGG_tree_2017 = ROOT.TChain()
- ttHJetToGG_tree_2017.AddFile(inDir+'/ttHJetToGG_2017_HHWWggTag_0_MoreVars.root/tth_125_13TeV_HHWWggTag_0_v1')
- ttHJetToGG_tree_2017.Draw("evalDNN>>h_DNN_ttHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)   
+ ttHJetToGG_tree_2017.AddFile(inDir+'/ttHJetToGG_M125_13TeV.root/output_tree')
+ ttHJetToGG_tree_2017.Draw("DNN_evaluation>>h_DNN_ttHtoGG_SR_2017",str(lumi_2017)+"*weight*"+Cut_SR)   
  
  histo_scale.Reset() 
  data_tree_2017 = ROOT.TChain()
- data_tree_2017.AddFile(inDir+'/Data_2016_HHWWggTag_0_MoreVars.root/Data_13TeV_HHWWggTag_0_v1') 
- data_tree_2017.AddFile(inDir+'/Data_2017_HHWWggTag_0_MoreVars.root/Data_13TeV_HHWWggTag_0_v1') 
- data_tree_2017.AddFile(inDir+'/Data_2018_HHWWggTag_0_MoreVars.root/Data_13TeV_HHWWggTag_0_v1') 
+ data_tree_2017.AddFile(inDir+'/allData.root/output_tree') 
+ data_tree_2017.AddFile(inDir+'/allData.root/output_tree') 
+ data_tree_2017.AddFile(inDir+'/allData.root/output_tree') 
  data_tree_2017 = reduceTree(data_tree_2017,Cut_noMass)
  data_tree_2017.Draw("Leading_Photon_MVA<-1.?-1.1:Leading_Photon_MVA>>histo_scale",Cut_SB)
  data_scale_2017 = float(histo_scale.Integral())
- data_tree_2017.Draw("evalDNN>>h_DNN_data_SB_2017",Cut_SB)
- data_tree_2017.Draw("evalDNN>>h_DNN_data_SB_2017_diffBins",Cut_SB)
+ data_tree_2017.Draw("DNN_evaluation>>h_DNN_data_SB_2017",Cut_SB)
+ data_tree_2017.Draw("DNN_evaluation>>h_DNN_data_SB_2017_diffBins",Cut_SB)
  
  #Bkgs MC samples
  treeNames = [
-   #'DiPhotonJetsBox_M40_80_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/DiPhotonJetsBox_M40_80_Sherpa_13TeV_HHWWggTag_0', #
-   'DiPhotonJetsBox_MGG-80toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_HHWWggTag_0',
-   #'GJet_Pt-20to40_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/GJet_Pt_20to40_DoubleEMEnriched_MGG_80toInf_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0', #
-   #'GJet_Pt-20toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/GJet_Pt_20toInf_DoubleEMEnriched_MGG_40to80_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0', #
-   'GJet_Pt-40toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/GJet_Pt_40toInf_DoubleEMEnriched_MGG_80toInf_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0',
-   #'QCD_Pt-30to40_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/QCD_Pt_30to40_DoubleEMEnriched_MGG_80toInf_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0', #
-   #'QCD_Pt-30toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/QCD_Pt_30toInf_DoubleEMEnriched_MGG_40to80_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0', #
-   #'QCD_Pt-40toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/QCD_Pt_40toInf_DoubleEMEnriched_MGG_80toInf_TuneCP5_13TeV_Pythia8_13TeV_HHWWggTag_0', #
-   #'DYJetsToLL_M-50_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/DYJetsToLL_M_50_TuneCP5_13TeV_amcatnloFXFX_pythia8_13TeV_HHWWggTag_0', #
-   'TTGG_0Jets_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTGG_0Jets_TuneCP5_13TeV_amcatnlo_madspin_pythia8_13TeV_HHWWggTag_0',
-   'TTGJets_TuneCP5_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTGJets_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8_13TeV_HHWWggTag_0',
-   #'TTJets_HT-600to800_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTJets_HT_600to800_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   #'TTJets_HT-800to1200_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTJets_HT_800to1200_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   #'TTJets_HT-1200to2500_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTJets_HT_1200to2500_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   #'TTJets_HT-2500toInf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTJets_HT_2500toInf_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   'ttWJets_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0',
-   'TTJets_TuneCP5_extra_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/TTJets_TuneCP5_13TeV_amcatnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   #'W1JetsToLNu_LHEWpT_0-50_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W1JetsToLNu_LHEWpT_0_50_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0', #
-   'W1JetsToLNu_LHEWpT_50-150_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W1JetsToLNu_LHEWpT_50_150_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W1JetsToLNu_LHEWpT_150-250_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W1JetsToLNu_LHEWpT_150_250_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W1JetsToLNu_LHEWpT_250-400_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W1JetsToLNu_LHEWpT_250_400_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W1JetsToLNu_LHEWpT_400-inf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W1JetsToLNu_LHEWpT_400_inf_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   #'W2JetsToLNu_LHEWpT_0-50_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W2JetsToLNu_LHEWpT_0_50_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0', #	
-   'W2JetsToLNu_LHEWpT_50-150_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W2JetsToLNu_LHEWpT_50_150_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W2JetsToLNu_LHEWpT_150-250_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W2JetsToLNu_LHEWpT_150_250_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W2JetsToLNu_LHEWpT_250-400_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W2JetsToLNu_LHEWpT_250_400_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   'W2JetsToLNu_LHEWpT_400-inf_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W2JetsToLNu_LHEWpT_400_inf_TuneCP5_13TeV_amcnloFXFX_pythia8_13TeV_HHWWggTag_0',
-   #'W3JetsToLNu_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W3JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   #'W4JetsToLNu_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/W4JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0', #
-   'WGGJets_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/WGGJets_TuneCP5_13TeV_madgraphMLM_pythia8_13TeV_HHWWggTag_0',
-   #'WGJJToLNuGJJ_EWK_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/WGJJToLNuGJJ_EWK_aQGC_FS_FM_TuneCP5_13TeV_madgraph_pythia8_13TeV_HHWWggTag_0',
-   'WGJJToLNu_EWK_QCD_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/WGJJToLNu_EWK_QCD_TuneCP5_13TeV_madgraph_pythia8_13TeV_HHWWggTag_0', #
-   #'WWTo1L1Nu2Q_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/WWTo1L1Nu2Q_13TeV_amcatnloFXFX_madspin_pythia8_13TeV_HHWWggTag_0', #
-   #'WW_TuneCP5_HHWWggTag_0_MoreVars_kinWeight_noHgg.root/WW_TuneCP5_13TeV_pythia8_13TeV_HHWWggTag_0', #
-   'GluGluHToGG_2017_HHWWggTag_0_MoreVars.root/ggh_125_13TeV_HHWWggTag_0_v1',
-   'VBFHToGG_2017_HHWWggTag_0_MoreVars.root/vbf_125_13TeV_HHWWggTag_0_v1',
-   'VHToGG_2017_HHWWggTag_0_MoreVars.root/wzh_125_13TeV_HHWWggTag_0_v1', 
-   'ttHJetToGG_2017_HHWWggTag_0_MoreVars.root/tth_125_13TeV_HHWWggTag_0_v1' 
+  "GluGluHToGG_M125_TuneCP5_13TeV.root/output_tree",
+  "ttHJetToGG_M125_13TeV.root/output_tree",
+  "VHToGG_M125_13TeV.root/output_tree",
+  "DiPhotonJetsBox_MGG-80toInf_13TeV.root/output_tree",
+  "GluGluToHHTo2G4Q_node_cHHH1_2018.root/output_tree",
+  "VBFHToGG_M125_13TeV.root/output_tree",
  ]
 
  histo_scale.Reset() 
@@ -330,12 +314,13 @@ if __name__ == '__main__':
  for tree in treeNames: 
    bkg_tree_2017.AddFile(inDir+'/'+tree)
  bkg_tree_2017 = reduceTree(bkg_tree_2017,Cut_noMass)
- bkg_tree_2017.Draw("Leading_Photon_MVA<-1.?-1.1:Leading_Photon_MVA>>histo_scale","kinWeight*weight*"+Cut_SB)
+ bkg_tree_2017.Draw("Leading_Photon_MVA<-1.?-1.1:Leading_Photon_MVA>>histo_scale","weight*"+Cut_SB)
  bkg_scale_2017 = float(histo_scale.Integral())
- bkg_tree_2017.Draw("evalDNN>>h_DNN_bkg_SR_2017",str(data_scale_2017/bkg_scale_2017)+"*kinWeight*weight*"+Cut_SR)
- bkg_tree_2017.Draw("evalDNN>>h_DNN_bkg_SB_2017_diffBins",str(data_scale_2017/bkg_scale_2017)+"*kinWeight*weight*"+Cut_SB)
+ print("bkg_scale_2017: %f"%bkg_scale_2017)
+ bkg_tree_2017.Draw("DNN_evaluation>>h_DNN_bkg_SR_2017",str(data_scale_2017/bkg_scale_2017)+"*weight*"+Cut_SR)
+ bkg_tree_2017.Draw("DNN_evaluation>>h_DNN_bkg_SB_2017_diffBins",str(data_scale_2017/bkg_scale_2017)+"*weight*"+Cut_SB)
 
- print "2017 Data/bkg SB scale:",data_scale_2017/bkg_scale_2017
+ print( "2017 Data/bkg SB scale:",data_scale_2017/bkg_scale_2017)
 
  h_DNN_signal_SB = h_DNN_signal_SB_2017.Clone()
  h_DNN_signal_SB.SetName('h_DNN_signal_SB')
@@ -370,13 +355,16 @@ if __name__ == '__main__':
 
  h_DNN_bkg_SR_weighted_2017 = ROOT.TH1F("h_DNN_bkg_SR_weighted_2017","h_DNN_bkg_SR_weighted_2017",int(nBins),float(min),float(max))
  
- print "Fill 2017 bkg reweighting..."
+ print( "Fill 2017 bkg reweighting...")
  bkg_tree_2017_bdtWeight = ROOT.TChain()
  MakeTree(bkg_tree_2017, h_DNN_ratio_SB, data_scale_2017/bkg_scale_2017, 'file.root')
+ print("DEBUG:#352")
  bkg_tree_2017_bdtWeight.AddFile('file.root/'+str(treeNames[0].split('/')[1]))
- bkg_tree_2017_bdtWeight.Draw("evalDNN>>h_DNN_bkg_SB_weighted_2017","bdt_weight*kinWeight*weight*"+Cut_SB)
- bkg_tree_2017_bdtWeight.Draw("evalDNN>>h_DNN_bkg_SB_weighted_2017_diffBins","bdt_weight*kinWeight*weight*"+Cut_SB)
- bkg_tree_2017_bdtWeight.Draw("evalDNN>>h_DNN_bkg_SR_weighted_2017","bdt_weight*kinWeight*weight*"+Cut_SR)
+ print("DEBUG:#354")
+ bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SB_weighted_2017","weight*"+Cut_SB)
+ print("DEBUG:#356")
+ bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SB_weighted_2017_diffBins","weight*"+Cut_SB)
+ bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SR_weighted_2017","weight*"+Cut_SR)
  
  h_DNN_bkg_SB_weighted = h_DNN_bkg_SB_weighted_2017.Clone()
  h_DNN_bkg_SB_weighted.SetName('h_DNN_bkg_SB_weighted')
@@ -392,12 +380,14 @@ if __name__ == '__main__':
 
  compareHistos(h_DNN_data_SB_diffBins,h_DNN_bkg_SB_weighted_diffBins,"h_DNN_SB_weighted",1)
 
- print "Smooth distributions..."
+ print( "Smooth distributions...")
  algos = ['SmoothSuper']
 
  for algo in algos:
+   print("[DEBUG:#385] algo: ",algo)
    outFile = ROOT.TFile(inDir+'/DNN_Histos_smoothing_'+algo+'_bins'+str(nBins)+'_massMin'+str(massMin)+'_massMax'+str(massMax)+'.root',"RECREATE")
    outFile.cd()
+   print("[DEBUG:#388] algo: ",algo)
    hist_smooth = smoothing(h_DNN_bkg_SR_weighted,algo)
    if hist_smooth!=-1: 
      drawHistos(h_DNN_bkg_SR_weighted,hist_smooth[0],hist_smooth[1],hist_smooth[2],h_DNN_bkg_SR_weighted.GetName()+"_smoothing_"+algo+"_nBins_"+str(nBins))
