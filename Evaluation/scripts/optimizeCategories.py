@@ -156,8 +156,86 @@ if __name__ == '__main__':
 
    print nCats," - Best categories: ",h_bdt_signal_SR.GetBinCenter(partition_final[0][0])-h_bdt_signal_SR.GetBinWidth(partition_final[0][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[1][0])-h_bdt_signal_SR.GetBinWidth(partition_final[1][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[2][0])-h_bdt_signal_SR.GetBinWidth(partition_final[2][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[3][0])-h_bdt_signal_SR.GetBinWidth(partition_final[3][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[4][0])-h_bdt_signal_SR.GetBinWidth(partition_final[4][0])/2, "1. --->",significance_final     
 
+  #6 categories
+  elif nCats == 6:
+   for i in range(1,nBins+1):
+    for j in range(i+1,nBins+1): 
+     for k in range(j+1,nBins+1):  
+      for d in range(k+1,nBins+1):  
+       for f in range(d+1,nBins+1):  
+         for g in range(f+1,nBins+1):  
+          partition = [[1,i],[j,k-1],[k,d-1],[d,f-1],[f,g-1],[g,nBins]]    
+          if abs(i-j)==1: 
+            #print partition 
+            significance = sumSignificance(partition, h_bdt_signal_SR, h_bdt_datamix_SR_weighted_smooth, h_bdt_data_SB)
+            if significance>significance_final:
+              significance_final = significance
+              partition_final = partition 
+
+   print nCats," - Best categories: ",h_bdt_signal_SR.GetBinCenter(partition_final[0][0])-h_bdt_signal_SR.GetBinWidth(partition_final[0][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[1][0])-h_bdt_signal_SR.GetBinWidth(partition_final[1][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[2][0])-h_bdt_signal_SR.GetBinWidth(partition_final[2][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[3][0])-h_bdt_signal_SR.GetBinWidth(partition_final[3][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[4][0])-h_bdt_signal_SR.GetBinWidth(partition_final[4][0])/2, "1. --->",significance_final     
+
+  #7 categories
+  elif nCats == 7:
+   for i in range(1,nBins+1):
+    for j in range(i+1,nBins+1): 
+     for k in range(j+1,nBins+1):  
+      for d in range(k+1,nBins+1):  
+       for f in range(d+1,nBins+1):  
+         for g in range(f+1,nBins+1):  
+           for h in range(g+1,nBins+1):  
+            partition = [[1,i],[j,k-1],[k,d-1],[d,f-1],[f,g-1],[g,h-1],[h,nBins]]    
+            if abs(i-j)==1: 
+              #print partition 
+              significance = sumSignificance(partition, h_bdt_signal_SR, h_bdt_datamix_SR_weighted_smooth, h_bdt_data_SB)
+              if significance>significance_final:
+                significance_final = significance
+                partition_final = partition 
+
+   print nCats," - Best categories: ",h_bdt_signal_SR.GetBinCenter(partition_final[0][0])-h_bdt_signal_SR.GetBinWidth(partition_final[0][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[1][0])-h_bdt_signal_SR.GetBinWidth(partition_final[1][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[2][0])-h_bdt_signal_SR.GetBinWidth(partition_final[2][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[3][0])-h_bdt_signal_SR.GetBinWidth(partition_final[3][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[4][0])-h_bdt_signal_SR.GetBinWidth(partition_final[4][0])/2, "1. --->",significance_final     
+
+  #8 categories
+  elif nCats == 8:
+   for i in range(1,nBins+1):
+    for j in range(i+1,nBins+1): 
+     for k in range(j+1,nBins+1):  
+      for d in range(k+1,nBins+1):  
+       for f in range(d+1,nBins+1):  
+         for g in range(f+1,nBins+1):  
+           for h in range(g+1,nBins+1):  
+             for l in range(h+1,nBins+1):  
+              partition = [[1,i],[j,k-1],[k,d-1],[d,f-1],[f,g-1],[g,h-1],[h,l-1],[l,nBins]]    
+              if abs(i-j)==1: 
+                #print partition 
+                significance = sumSignificance(partition, h_bdt_signal_SR, h_bdt_datamix_SR_weighted_smooth, h_bdt_data_SB)
+                if significance>significance_final:
+                  significance_final = significance
+                  partition_final = partition 
+
+   print nCats," - Best categories: ",h_bdt_signal_SR.GetBinCenter(partition_final[0][0])-h_bdt_signal_SR.GetBinWidth(partition_final[0][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[1][0])-h_bdt_signal_SR.GetBinWidth(partition_final[1][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[2][0])-h_bdt_signal_SR.GetBinWidth(partition_final[2][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[3][0])-h_bdt_signal_SR.GetBinWidth(partition_final[3][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[4][0])-h_bdt_signal_SR.GetBinWidth(partition_final[4][0])/2, "1. --->",significance_final     
+
+  #8 categories
+  elif nCats == 9:
+   for i in range(1,nBins+1):
+    for j in range(i+1,nBins+1): 
+     for k in range(j+1,nBins+1):  
+      for d in range(k+1,nBins+1):  
+       for f in range(d+1,nBins+1):  
+         for g in range(f+1,nBins+1):  
+           for h in range(g+1,nBins+1):  
+             for l in range(h+1,nBins+1):  
+               for m in range(l+1,nBins+1):  
+                partition = [[1,i],[j,k-1],[k,d-1],[d,f-1],[f,g-1],[g,h-1],[h,l-1],[l,m-1],[m,nBins]]    
+                if abs(i-j)==1: 
+                  #print partition 
+                  significance = sumSignificance(partition, h_bdt_signal_SR, h_bdt_datamix_SR_weighted_smooth, h_bdt_data_SB)
+                  if significance>significance_final:
+                    significance_final = significance
+                    partition_final = partition 
+
+   print nCats," - Best categories: ",h_bdt_signal_SR.GetBinCenter(partition_final[0][0])-h_bdt_signal_SR.GetBinWidth(partition_final[0][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[1][0])-h_bdt_signal_SR.GetBinWidth(partition_final[1][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[2][0])-h_bdt_signal_SR.GetBinWidth(partition_final[2][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[3][0])-h_bdt_signal_SR.GetBinWidth(partition_final[3][0])/2, h_bdt_signal_SR.GetBinCenter(partition_final[4][0])-h_bdt_signal_SR.GetBinWidth(partition_final[4][0])/2, "1. --->",significance_final     
+
   else: 
-   print "Number of categories not supported, choose: 1, 2, 3, 4 or 5!"
+   print "Number of categories not supported, choose: 1, 2, 3, 4, 5, 6, 7, 8 or 9!"
    sys.exit()
 
   #final details

@@ -44,8 +44,6 @@ def MakeTree(inputTree, h_ratio, scale, ouputFile):
  print("h_ratio: ",h_ratio)
  print("scale: ",scale)
  print("ouputFile: ",ouputFile)
- # inputTree.Print()
- print("="*51)
  outFile = ROOT.TFile(ouputFile, "RECREATE")
  outTree = inputTree.CloneTree(0)
  outTree.SetBranchStatus('*',1)
@@ -61,12 +59,10 @@ def MakeTree(inputTree, h_ratio, scale, ouputFile):
     else: bdt_weight[0] = scale 
     outTree.Fill() 
  outFile.cd()
- print("DEBUG:#62")
  outTree.Write()
  outFile.Close()
 
 def smoothing(h_bdt,method="SmoothSuper"):
- print("[DEBUG#69:]: Inside smoothing function")
  print(h_bdt)
  
  bin_min = h_bdt.GetBinCenter(1)-h_bdt.GetBinWidth(1)/2.
@@ -102,7 +98,6 @@ def smoothing(h_bdt,method="SmoothSuper"):
   h_DNN_smooth.SetBinContent(bin+1,y[0])
   h_DNN_smooth_rnd.SetBinContent(bin+1,rnd.Poisson(float(y[0])))
   
- print("[DEBUG:#99] h_DNN_smooth.Integral() = ",h_DNN_smooth.Integral())
  h_DNN_smooth.Scale(h_bdt.Integral()/h_DNN_smooth.Integral())
  h_DNN_smooth_rnd.Scale(h_bdt.Integral()/h_DNN_smooth_rnd.Integral())
 
@@ -224,7 +219,6 @@ if __name__ == '__main__':
  args = parser.parse_args()
  inDir = args.inDir
  #inDir = '/eos/user/b/bmarzocc/HHWWgg/January_2021_Production/HHWWyyDNN_binary_noHgg_noNegWeights_BalanceYields_allBkgs_LOSignals_noPtOverM/'
-
  nBins = 100
  #print( args.nBins,args.min,args.max)
  if args.nBins: nBins = args.nBins
@@ -303,10 +297,10 @@ if __name__ == '__main__':
  treeNames = [
   "GluGluHToGG_M125_TuneCP5_13TeV.root/output_tree",
   "ttHJetToGG_M125_13TeV.root/output_tree",
-  "VHToGG_M125_13TeV.root/output_tree",
   "DiPhotonJetsBox_MGG-80toInf_13TeV.root/output_tree",
   "GluGluToHHTo2G4Q_node_cHHH1_2018.root/output_tree",
-  "VBFHToGG_M125_13TeV.root/output_tree",
+  # "VHToGG_M125_13TeV.root/output_tree",
+  # "VBFHToGG_M125_13TeV.root/output_tree"
  ]
 
  histo_scale.Reset() 
@@ -358,11 +352,8 @@ if __name__ == '__main__':
  print( "Fill 2017 bkg reweighting...")
  bkg_tree_2017_bdtWeight = ROOT.TChain()
  MakeTree(bkg_tree_2017, h_DNN_ratio_SB, data_scale_2017/bkg_scale_2017, 'file.root')
- print("DEBUG:#352")
  bkg_tree_2017_bdtWeight.AddFile('file.root/'+str(treeNames[0].split('/')[1]))
- print("DEBUG:#354")
  bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SB_weighted_2017","weight*"+Cut_SB)
- print("DEBUG:#356")
  bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SB_weighted_2017_diffBins","weight*"+Cut_SB)
  bkg_tree_2017_bdtWeight.Draw("DNN_evaluation>>h_DNN_bkg_SR_weighted_2017","weight*"+Cut_SR)
  
@@ -384,10 +375,8 @@ if __name__ == '__main__':
  algos = ['SmoothSuper']
 
  for algo in algos:
-   print("[DEBUG:#385] algo: ",algo)
    outFile = ROOT.TFile(inDir+'/DNN_Histos_smoothing_'+algo+'_bins'+str(nBins)+'_massMin'+str(massMin)+'_massMax'+str(massMax)+'.root',"RECREATE")
    outFile.cd()
-   print("[DEBUG:#388] algo: ",algo)
    hist_smooth = smoothing(h_DNN_bkg_SR_weighted,algo)
    if hist_smooth!=-1: 
      drawHistos(h_DNN_bkg_SR_weighted,hist_smooth[0],hist_smooth[1],hist_smooth[2],h_DNN_bkg_SR_weighted.GetName()+"_smoothing_"+algo+"_nBins_"+str(nBins))
