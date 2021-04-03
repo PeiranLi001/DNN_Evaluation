@@ -262,7 +262,7 @@ if __name__ == '__main__':
 
  histo_scale.Reset() 
  sig_tree_2017 = ROOT.TChain()
- sig_tree_2017.AddFile(inDir+'/GluGluToHHTo2G4Q_node_cHHH1_2018.root/output_tree')
+ sig_tree_2017.AddFile(inDir+'/GluGluToHHTo2G4Q_node_cHHH1_2017.root/output_tree')
  sig_tree_2017.Draw("Leading_Photon_MVA<-1.?-1.1:Leading_Photon_MVA>>histo_scale","weight*0.441*0.00097*31.049*"+Cut_SR)
  sig_scale_2017 = float(histo_scale.Integral())
  sig_tree_2017.Draw("DNN_evaluation>>h_DNN_signal_SB_2017",str(lumi_2017)+"*weight*0.441*0.00097*31.049*"+Cut_SB)  
@@ -298,7 +298,7 @@ if __name__ == '__main__':
   "GluGluHToGG_M125_TuneCP5_13TeV.root/output_tree",
   "ttHJetToGG_M125_13TeV.root/output_tree",
   "DiPhotonJetsBox_MGG-80toInf_13TeV.root/output_tree",
-  "GluGluToHHTo2G4Q_node_cHHH1_2018.root/output_tree",
+  "GluGluToHHTo2G4Q_node_cHHH1_2017.root/output_tree",
   # "VHToGG_M125_13TeV.root/output_tree",
   # "VBFHToGG_M125_13TeV.root/output_tree"
  ]
