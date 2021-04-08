@@ -1,0 +1,15 @@
+#a_costheta1 70 -1 1 cos(#theta1)
+#a_costheta2 70 -1 1 cos(#theta2)
+#a_costhetastar 70 -1 1 cos(#theta*)
+#a_Phi   70 -3.14 3.14 #phi
+#a_Phi1  70 -3.14 3.14 #phi1
+#New_minDeltaR_gg4j 55 0 5 min(#DetlaR)
+#New_maxDeltaR_gg4j 55 0 7 max(#DeltaR)
+#CosThetaStar_CS 70 -1 1 cos(#thetaStarCS)
+#CosThetaStar_CS_old 70 -1 1 cos(#thetaStarCSOld)
+#HelicityCostheta1 70 -1 1 Helicity1
+#HelicityCostheta2 70 -1 1 Helicity2
+#New_minDeltaR_4j 55 0 5 min(#DeltaR4j)
+#New_maxDeltaR_4j 55 0 5 max(#DeltaR4j)
+DNN_evaluation 25 0.97 1.0 DNN_Score
+CMS_hgg_mass 100 100 160 M(hgg)
