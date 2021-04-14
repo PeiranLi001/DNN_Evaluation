@@ -7,7 +7,7 @@ process.ioFilesOpt = cms.PSet(
     ##input files
     inputFiles = cms.vstring(
        '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Signal/GluGluToHHTo2G4Q_node_cHHH1_2017.root',
-       #'/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Backgrounds/DiPhotonJetsBox_M40_80.root',
+       '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Backgrounds/DiPhotonJetsBox_M40_80.root',
        '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Backgrounds/DiPhotonJetsBox_MGG-80toInf_13TeV.root',
        '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Backgrounds/VBFHToGG_M125_13TeV.root',
        '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Backgrounds/VHToGG_M125_13TeV.root',
@@ -19,7 +19,7 @@ process.ioFilesOpt = cms.PSet(
        '/eos/user/r/rasharma/post_doc_ihep/double-higgs/ntuples/January_2021_Production/DNN_MoreVar_v2/Data/allData.root'
        
     ),
-    inputDir = cms.string('tagsDumper/trees'), 
+    inputDir = cms.string('tagsDumper/trees/'), 
     #inputDir = cms.string(''),  
     outputDir = cms.string('/eos/user/l/lipe/DNNsetup/CMSSW/CMSSW_10_6_8/src/DNN_Evaluation/Evaluation/output/'),
     

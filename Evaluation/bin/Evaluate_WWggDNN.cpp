@@ -157,6 +157,7 @@ int main(int argc, char** argv)
    tensorflow::Session* session = tensorflow::createSession(tensorflow::loadGraphDef(inputModel_.c_str()));
    std::cout <<"test12"<< std::endl;
    float evalDNN = -999.;
+   //TDirectory* dir;
    for(unsigned int iFile=0; iFile<inputFiles_.size(); iFile++)
    {
        TFile* inFile = TFile::Open(inputFiles_.at(iFile).c_str());
@@ -164,8 +165,8 @@ int main(int argc, char** argv)
        std::cout <<"test13"<< std::endl;
        if(inputDir_!=""){
 	  std::cout <<"test133"<< std::endl;
-	  
-	  TDirectory* dir =(TDirectory*)inFile->Get(inputDir_.c_str());
+	  inFile->cd("tagsDumper/trees");
+	  //dir =(TDirectory*)inFile->Get(inputDir_.c_str());
 	  
 	  std::cout <<"test134"<< std::endl;
 	  std::cout <<iFile<< std::endl;
@@ -174,7 +175,8 @@ int main(int argc, char** argv)
 	  //std::cout << "ListTrees: " << dir->GetName() << " - " << object->GetName() << std::endl;
 	  //std::cout <<sizeof(dir)<< std::endl;
 	  //std::cout <<dir<< std::endl;
-          categories_ = ListTrees(dir);
+          categories_ = ListTrees(gDirectory);
+	  //categories_ = ListTrees(dir);
 	  std::cout <<"test999"<< std::endl;
        }
        else{
@@ -187,7 +189,7 @@ int main(int argc, char** argv)
        TFile* outFile = new TFile((outputDir_+split_str.at(split_str.size()-1)).c_str(),"recreate");
        outFile->cd();
 
-       if(inputDir_!="") inputDir_ = inputDir_ + '/';
+       //if(inputDir_!="") inputDir_ = inputDir_ + '/';
        
        for(unsigned int iCat=0; iCat<categories_.size(); iCat++)
        { 
@@ -218,7 +220,7 @@ int main(int argc, char** argv)
            for(int entry = 0; entry < copyTree->GetEntries(); entry++)
            {  
                //if(entry>0) continue;
-               if(entry%1000==0) std::cout << "--- Reading " << categories_.at(iCat).c_str() << " = " << entry << std::endl;
+               if(entry%10==0) std::cout << "--- Reading " << categories_.at(iCat).c_str() << " = " << entry << std::endl;
                copyTree->GetEntry(entry);
 	       
                //if( entry < 10000 ) continue;
