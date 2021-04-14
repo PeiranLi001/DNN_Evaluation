@@ -36,7 +36,7 @@ void SplitString(const std::string& str, vector<string>& cont, char delim = ' ')
     while (std::getline(ss, token, delim)) {
         cont.push_back(token);
     }
-    std::cout <<"test1"<<std::endl;
+    
 }
 
 vector<string> ListTrees(TDirectory* dir)
@@ -63,7 +63,7 @@ vector<string> ListTrees(TFile* file)
            names.push_back(string(object->GetName()));
            //std::cout << "ListTrees: " << object->GetName() << std::endl; 
     }
-    std::cout <<"test3"<<std::endl;
+    
     return names;
 }
 
@@ -73,7 +73,7 @@ void SetTree(TTree* tree, vector<float>* branchVals, vector<TBranch*>* branchRef
    size_t nBranches = tree->GetListOfBranches()->GetEntries();
    branchVals->resize(inputBranches->size());
    branchRefs->resize(inputBranches->size()); 
-   std::cout <<"test4"<<std::endl;
+   
    for(unsigned int iVar = 0; iVar < inputBranches->size(); ++iVar)
    {
        for(size_t i = 0; i < nBranches; ++i)
@@ -86,7 +86,7 @@ void SetTree(TTree* tree, vector<float>* branchVals, vector<TBranch*>* branchRef
            }
        }
    }
-   std::cout <<"test5"<<std::endl;
+   
 
 }
 
@@ -136,53 +136,41 @@ void SetValues(vector<float>* inputVals, vector<float>* branchVals)
 
 int main(int argc, char** argv)
 {
-   std::cout <<"test7"<<std::endl;
+   
    const edm::ParameterSet &process         = edm::readPSetsFrom( argv[1] )->getParameter<edm::ParameterSet>( "process" );
    const edm::ParameterSet &filesOpt        = process.getParameter<edm::ParameterSet>( "ioFilesOpt" );
-    std::cout <<"test8"<< std::endl;
+    
    // config inputs
    vector<string> inputFiles_    = filesOpt.getParameter<vector<string>>( "inputFiles" );
    string inputDir_              = filesOpt.getParameter<string>( "inputDir" );
    string outputDir_             = filesOpt.getParameter<string>( "outputDir" );
 
    string inputModel_            = filesOpt.getParameter<string>( "inputModel" );
-   std::cout <<"test9"<< std::endl;
+   
    vector<string> inputParams_   = filesOpt.getParameter<vector<string>>( "inputParams" );
    vector<string> inputBranches_ = filesOpt.getParameter<vector<string>>( "inputBranches" );
    vector<string> inputVars_     = filesOpt.getParameter<vector<string>>( "inputVars" );
-   std::cout <<"test10"<< std::endl;
+   
    // create a DNN session
    std::cout << "inputModel: " << inputModel_.c_str() << std::endl;
-   std::cout <<"test11"<< std::endl;
+  
    tensorflow::Session* session = tensorflow::createSession(tensorflow::loadGraphDef(inputModel_.c_str()));
-   std::cout <<"test12"<< std::endl;
    float evalDNN = -999.;
    //TDirectory* dir;
    for(unsigned int iFile=0; iFile<inputFiles_.size(); iFile++)
    {
        TFile* inFile = TFile::Open(inputFiles_.at(iFile).c_str());
        vector<string> categories_;
-       std::cout <<"test13"<< std::endl;
        if(inputDir_!=""){
-	  std::cout <<"test133"<< std::endl;
 	  inFile->cd("tagsDumper/trees");
 	  //dir =(TDirectory*)inFile->Get(inputDir_.c_str());
 	  
-	  std::cout <<"test134"<< std::endl;
-	  std::cout <<iFile<< std::endl;
-	  std::cout <<inputFiles_.at(iFile).c_str()<< std::endl;
-	  std::cout <<inputDir_.c_str()<< std::endl;
-	  //std::cout << "ListTrees: " << dir->GetName() << " - " << object->GetName() << std::endl;
-	  //std::cout <<sizeof(dir)<< std::endl;
-	  //std::cout <<dir<< std::endl;
           categories_ = ListTrees(gDirectory);
 	  //categories_ = ListTrees(dir);
-	  std::cout <<"test999"<< std::endl;
        }
        else{
           categories_ = ListTrees(inFile);  
        }
-       std::cout <<"test14"<< std::endl;
        vector<string> split_str;
        SplitString(inputFiles_.at(iFile), split_str, '/');
        
@@ -198,7 +186,6 @@ int main(int argc, char** argv)
               std::cout << "WARNING ----> NOT FOUND: " << (inputDir_+categories_.at(iCat)).c_str() << std::endl;         
               continue;
            }
-	   //std::cout <<"test17"<< std::endl;
            TTree* inTree = (TTree*)inFile->Get((inputDir_+categories_.at(iCat)).c_str());
 	   
            inTree->SetBranchStatus("evalDNN",0);
@@ -246,12 +233,12 @@ int main(int argc, char** argv)
        }
        outFile->Write();
        outFile->Close(); 
-       std::cout <<"test24"<< std::endl;
+      
        //categories_.clear();
    }
    // cleanup
    tensorflow::closeSession(session);
-   std::cout <<"test25"<< std::endl;
+   
 
 
 }
