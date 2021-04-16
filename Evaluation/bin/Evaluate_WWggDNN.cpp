@@ -207,7 +207,7 @@ int main(int argc, char** argv)
            for(int entry = 0; entry < copyTree->GetEntries(); entry++)
            {  
                //if(entry>0) continue;
-               if(entry%10==0) std::cout << "--- Reading " << categories_.at(iCat).c_str() << " = " << entry << std::endl;
+               if(entry%10000==0) std::cout << "--- Reading " << categories_.at(iCat).c_str() << " = " << entry << std::endl;
                copyTree->GetEntry(entry);
 	       
                //if( entry < 10000 ) continue;
